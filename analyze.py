@@ -9,6 +9,10 @@ def loadAU(filename):
     num_frames = signal_fp.getnframes()
 
     signal_data = np.fromstring(signal_fp.readframes(num_frames), dtype=np.dtype('>h')) # convert data to array
+    
+    # normalization (don't want this for LDA model)
+    #signal_data = signal_data.astype(float)
+    #signal_data /= 32766.0
 
     return signal_data, sample_rate
 
@@ -53,26 +57,41 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
 
     return frames
 
-def genFreqVec(frames, sample_rate, num_freq=2048, pow_fft=True):
+# generates bag of frequencies for one audio excerpt
+def generate_bof(frames, sample_rate, num_freq=2048, pow_fft=True):
     
     mag_frames = np.absolute(np.fft.rfft(frames, num_freq))
     pow_frames = ((1.0 / num_freq) * ((mag_frames) ** 2))
+    
+    freq = np.arange(0, sample_rate/2, sample_rate/len(mag_frames))
 
     if pow_fft:
-        freqVec = np.sum(pow_frames, axis=0)
+        freqVec = np.sum(pow_frames, axis=0)/len(pow_frames)
     else:
-        freqVec = np.sum(mag_frames, axis=0)
+        freqVec = np.sum(mag_frames, axis=0)/len(mag_frames)
 
-    return freqVec
+    bof = [] # bag of frequencies
+    fid = 0  # frequency id
+
+    # stuff bag of frequencies 
+    for power in np.nditer(freqVec):
+        bof.append((fid, float(power)))
+        fid += 1
+
+    return bof
+
+# generates "corpus" - list of bag of frequencies for audio excerpts
+def generate_corpus(bofs):
 
 
-rock01 = "genres/rock/rock.00000.au" # 30 sec clip from dataset
+rock01 = "genres/rock/rock.00005.au" # 30 sec clip from dataset
 data, Fs = loadAU(rock01)
-frames = frameSignal(data, Fs)
-freqVec = genFreqVec(frames, Fs)
-freq = np.arange(1025)
 
-plt.plot(freq, freqVec)
+frames = frameSignal(data, Fs)
+bof = generate_bof(frames, Fs)
+
+
+plt.plot(bof[:][0], bof[:][1])
 plt.yscale('log')
 plt.xscale('log')
 plt.show()
