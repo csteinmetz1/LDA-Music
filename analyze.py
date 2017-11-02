@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sunau
+import os
 
 import gensim
 import logging
@@ -16,6 +17,9 @@ def loadAU(filename):
     # normalization (don't want this for LDA model)
     #signal_data = signal_data.astype(float)
     #signal_data /= 32766.0
+
+    # we should normalize each audio signal to 0dB to ensure louder
+    # recordings do no have frequencies weighted more greatly
 
     return signal_data, sample_rate
 
@@ -83,8 +87,24 @@ def generate_bof(frames, sample_rate, fft_size=2048, pow_fft=True):
     return bof
 
 # generates "corpus" - list of bag of frequencies for audio excerpts
-def generate_corpus(bofs):
-    pass
+def generate_corpus():
+    
+    corpus = []
+    
+    rootdir = "genres/"
+
+    for genre in os.listdir(rootdir):
+        print genre
+        if not genre.endswith(".DS_Store"):
+            for filename in os.listdir(rootdir + genre):
+                if filename.endswith(".au"):
+                    print rootdir + genre + "/" + filename
+                    data, Fs = loadAU(rootdir + genre + "/" + filename)
+                    frames = frameSignal(data, Fs)
+                    bof = generate_bof(frames, Fs)
+                    corpus.append(bof)
+    
+    return corpus
 
 def generate_dictionary(sample_rate, fft_size):
     
@@ -107,20 +127,7 @@ def train_model(dictionary, corpus, num_topics):
 
     return ldamodel
 
-rock01 = "genres/rock/rock.00005.au" # 30 sec clip from dataset
-data, Fs = loadAU(rock01)
-
-frames = frameSignal(data, Fs)
-bof = generate_bof(frames, Fs)
-dictionary = generate_dictionary(Fs, 2048)
-
-corpus = []
-corpus.append(bof)
-
-train_model(dictionary, corpus, 50)
-
-
-#plt.plot(bof[:][0], bof[:][1])
-#plt.yscale('log')
-#plt.xscale('log')
-#plt.show()
+dictionary = generate_dictionary(22050, 2048)
+corpus = generate_corpus()
+ldamodel = train_model(dictionary, corpus, 50)
+print(ldamodel.print_topics(num_topics=50, num_words=5))
