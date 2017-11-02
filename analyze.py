@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.fftpack
 import matplotlib.pyplot as plt
 import sunau
 
