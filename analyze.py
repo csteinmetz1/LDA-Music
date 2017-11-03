@@ -21,6 +21,9 @@ def loadAU(filename):
     # we should normalize each audio signal to 0dB to ensure louder
     # recordings do no have frequencies weighted more greatly
 
+    # Also, we many want to apply loudness curves to the
+    # frequency data in order to 
+
     return signal_data, sample_rate
 
 def plotSignal(signal, sample_rate):
@@ -65,7 +68,7 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
     return frames
 
 # generates bag of frequencies for one audio excerpt
-def generate_bof(frames, sample_rate, fft_size=2048, pow_fft=True):
+def generateBagOfFrequencies(frames, sample_rate, fft_size=2048, pow_fft=True):
     
     mag_frames = np.absolute(np.fft.rfft(frames, fft_size))
     pow_frames = ((1.0 / fft_size) * ((mag_frames) ** 2))
@@ -87,7 +90,7 @@ def generate_bof(frames, sample_rate, fft_size=2048, pow_fft=True):
     return bof
 
 # generates "corpus" - list of bag of frequencies for audio excerpts
-def generate_corpus():
+def generateCorpus():
     
     corpus = []
     
@@ -101,12 +104,12 @@ def generate_corpus():
                     print rootdir + genre + "/" + filename
                     data, Fs = loadAU(rootdir + genre + "/" + filename)
                     frames = frameSignal(data, Fs)
-                    bof = generate_bof(frames, Fs)
+                    bof = generateBagOfFrequencies(frames, Fs)
                     corpus.append(bof)
     
     return corpus
 
-def generate_dictionary(sample_rate, fft_size):
+def generateDictionary(sample_rate, fft_size):
     
     dictionary = {}
     fid = 0  # frequency id
@@ -120,14 +123,16 @@ def generate_dictionary(sample_rate, fft_size):
     print dictionary
     return dictionary
 
-def train_model(dictionary, corpus, num_topics):
+def trainModel(dictionary, corpus, num_topics):
 
     Lda = gensim.models.ldamodel.LdaModel
-    ldamodel = Lda(corpus, num_topics=num_topics, id2word = dictionary, passes=16)
+    ldamodel = Lda(corpus, num_topics=num_topics, id2word = dictionary, passes=1)
 
     return ldamodel
 
-dictionary = generate_dictionary(22050, 2048)
-corpus = generate_corpus()
-ldamodel = train_model(dictionary, corpus, 50)
-print(ldamodel.print_topics(num_topics=50, num_words=5))
+# perform the anaylsis here
+dictionary = generateDictionary(22050, 2048)
+corpus = generateCorpus()
+ldamodel = trainModel(dictionary, corpus, 50)
+
+ldamodel.save("model/lda.model")
