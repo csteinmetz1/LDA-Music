@@ -2,3 +2,4 @@ genres/
 ref/
 speech.wav
 model/
+*.pyc
