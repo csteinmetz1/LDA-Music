@@ -9,7 +9,7 @@ def loadau(filename):
     Load .au audio file.
     
     Args:
-        filename: path and filename of desire file from the current directory
+        filename (str): path and filename of desire file from the current directory
 
     Returns:
        singal_data: Numpy array of the audio data in int16 format
@@ -58,7 +58,26 @@ def plotSignal(signal, sample_rate):
     plt.show()
 
 def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
-    
+    """
+    Frame and window a signal of arbitrary length.
+
+    Parameters
+    ----------
+    signal : Numpy array of audio data
+    samele_rate : sample rate of audio data
+    frame_length : desired frame size
+    frame_step : desired step size
+        
+    Returns
+    -------
+    out : ndarray
+        Data read from the text file.
+
+    Notes
+    -----
+    This method uses a Hamming window
+
+    """
     signal_length = len(signal)
     num_frames = int(np.ceil(float(np.abs(signal_length - frame_length)) / frame_step)) 
 

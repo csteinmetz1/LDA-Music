@@ -10,22 +10,23 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 import analysis # provides specilized methods for loading files and preprocessing
 
 # generates "corpus" - list of bag of frequencies for audio excerpts
+# we will split the data set and use 80% to train the model
 def generateCorpus():
     
     corpus = []
     rootdir = "genres/"
 
     for genre in os.listdir(rootdir):
-        print genre
-        if not genre.endswith(".DS_Store"):
+        if not genre.endswith(".DS_Store"): # ignore these annoying MacOS X files
+            print genre
             for filename in os.listdir(rootdir + genre):
-                if filename.endswith(".au"):
-                    print rootdir + genre + "/" + filename
+                # use the first 80 excerpts from each genre
+                if filename.endswith(".au") and int(filename[filename.find(".")+1:filename.rfind(".")]) < 80: 
+                    print int(filename[filename.find(".")+1:filename.rfind(".")]) 
                     data, fs = analysis.loadau(rootdir + genre + "/" + filename)
-                    frames = analysis.frameSignal(data, fs)
-                    bof = analysis.generateBagOfFrequencies(frames, fs)
+                    bof = analysis.generateBagOfFrequencies(data, fs)
                     corpus.append(bof)
-        return corpus
+    return corpus
 
 def generateDictionary(sample_rate, fft_size):
     
@@ -44,7 +45,7 @@ def generateDictionary(sample_rate, fft_size):
 def trainModel(dictionary, corpus, num_topics):
 
     Lda = gensim.models.ldamodel.LdaModel
-    ldamodel = Lda(corpus, num_topics=num_topics, id2word = dictionary, passes=1)
+    ldamodel = Lda(corpus, num_topics=num_topics, id2word=dictionary, passes=16, minimum_probability=0.0)
 
     return ldamodel
 
@@ -52,5 +53,5 @@ def trainModel(dictionary, corpus, num_topics):
 dictionary = generateDictionary(22050, 2048)
 corpus = generateCorpus()
 ldamodel = trainModel(dictionary, corpus, 50)
-
 ldamodel.save("model/lda.model")
+
