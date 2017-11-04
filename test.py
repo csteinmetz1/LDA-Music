@@ -1,8 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import euclidean
+from sklearn.decomposition import PCA
 import sunau
 import os
+
 
 import gensim
 import logging
@@ -11,12 +13,15 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 import analysis # provides specilized methods for loading files and preprocessing
 
 # first load a file not used in training
-data, fs = analysis.loadau("genres/rock/rock.00080.au")
+data, fs = analysis.loadau("genres/rock/rock.00080.au.au")
 
 # generate seed bag of frequencies vector
 bof_seed = analysis.generateBagOfFrequencies(data, fs)
 
 library = [] # to store list of all bof vectors for music library
+titles = {} # to store song titles 
+title = 0 # index to title dict
+
 rootdir = "genres/" # directory of dataset
 
 # load all of the potential recommendations
@@ -29,6 +34,12 @@ for genre in os.listdir(rootdir):
                 data, fs = analysis.loadau(rootdir + genre + "/" + filename)
                 bof = analysis.generateBagOfFrequencies(data, fs)
                 library.append(bof)
+                titles[title] = filename
+                title += 1
+
+#data, fs = analysis.loadau("genres/rock/rock.00000.au")
+#bof = analysis.generateBagOfFrequencies(data, fs)
+#library.append(bof)
 
 # load the model from training
 model = gensim.models.LdaModel.load("model/lda.model")
@@ -40,7 +51,7 @@ seed_topic_distribution = model.inference([bof_seed])[0][0]
 distance_list = []
 for bof_candidate in library:
     
-    # id and topic distribution as output from the model
+    # topic distribution as output from the model
     candidate_topic_distribution = model.inference([bof_candidate])[0][0]
 
     # calculate the distance from the seed    
@@ -49,6 +60,14 @@ for bof_candidate in library:
 distance_array = np.asarray(distance_list)
 
 # find the closet vector
-closet = np.argmin(distance_array)
-print distance_array[closet]
-print closet
+closest = np.argmin(distance_array) # closet value will be the seed in the library
+distance_array /= closest # normalize by the seed distance (there is variation in the inference)
+
+# find the 10 closest songs
+inds = np.argpartition(distance_array, 10)[:10]
+for ind in inds:
+    print "%d %d %s" %(ind, distance_array[ind], titles[ind])
+
+# now use PCA to reduce the dimensionality of each distibution vector
+#cov_mat = np.cov(candidate_topic_distribution)
+#print cov_mat
