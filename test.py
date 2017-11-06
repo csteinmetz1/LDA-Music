@@ -13,7 +13,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 import analysis # provides specilized methods for loading files and preprocessing
 
 # first load a file not used in training
-data, fs = analysis.loadau("genres/rock/rock.00080.au.au")
+data, fs = analysis.loadau("genres/rock/rock.00080.au")
 
 # generate seed bag of frequencies vector
 bof_seed = analysis.generateBagOfFrequencies(data, fs)

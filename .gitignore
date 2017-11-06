@@ -3,3 +3,6 @@ ref/
 speech.wav
 model/
 *.pyc
+*.au
+*.mp3
+wsbfLibrary.py

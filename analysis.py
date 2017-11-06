@@ -30,6 +30,8 @@ def loadau(filename):
 
     # Also, we many want to apply loudness curves to the
     # frequency data in order to 
+    
+    signal_fp.close()
 
     return signal_data, sample_rate
 
