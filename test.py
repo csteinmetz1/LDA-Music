@@ -5,7 +5,6 @@ from sklearn.decomposition import PCA
 import sunau
 import os
 
-
 import gensim
 import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
@@ -13,7 +12,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 import analysis # provides specilized methods for loading files and preprocessing
 
 # first load a file not used in training
-data, fs = analysis.loadau("genres/rock/rock.00080.au")
+data, fs = analysis.load_au("genres/rock/rock.00080.au")
 
 # generate seed bag of frequencies vector
 bof_seed = analysis.generateBagOfFrequencies(data, fs)
@@ -31,7 +30,7 @@ for genre in os.listdir(rootdir):
         for filename in os.listdir(rootdir + genre):
             if filename.endswith(".au"): 
                 #print int(filename[filename.find(".")+1:filename.rfind(".")]) 
-                data, fs = analysis.loadau(rootdir + genre + "/" + filename)
+                data, fs = analysis.load_au(rootdir + genre + "/" + filename)
                 bof = analysis.generateBagOfFrequencies(data, fs)
                 library.append(bof)
                 titles[title] = filename
@@ -69,5 +68,8 @@ for ind in inds:
     print "%d %d %s" %(ind, distance_array[ind], titles[ind])
 
 # now use PCA to reduce the dimensionality of each distibution vector
-#cov_mat = np.cov(candidate_topic_distribution)
-#print cov_mat
+pca = PCA(n_components=2)
+pca.fit(bof_seed)
+bof_seed_new = pca.transform(bof_seed)
+
+print bof_seed_new

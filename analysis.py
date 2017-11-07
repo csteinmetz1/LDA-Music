@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sunau
 import os
+from pydub  import AudioSegment
 
-
-def loadau(filename):
+def load_au(filename):
     """
     Load .au audio file.
     
@@ -34,6 +34,36 @@ def loadau(filename):
     # frequency data in order to 
     
     signal_fp.close()
+
+    return signal_data, sample_rate
+
+def load_mp3(filename):
+    """
+    Load .mp3 audio file.
+    
+    Parameters
+    ----------
+    filename : path and filename of desire file from the current directory
+
+    Returns
+    -------
+    singal_data : Numpy array of the audio data in ??? format
+    sample_rate : Sample rate of the audio as an int 
+    """
+    
+    # load audio file
+    signal = AudioSegment.from_mp3(filename)
+
+    signal_data = np.asarray(signal.get_array_of_samples())
+    sample_rate = signal.frame_rate
+
+    # check number of channels - sum if 2 channels
+    if signal.channels > 1:
+        print signal_data
+        left_channel = signal_data[0:2:]
+        right_channel = signal_data[1:2:]
+        mono_signal = np.add(left_channel, right_channel)
+        print mono_signal
 
     return signal_data, sample_rate
 

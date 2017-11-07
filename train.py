@@ -23,7 +23,7 @@ def generateCorpus():
                 # use the first 80 excerpts from each genre
                 if filename.endswith(".au") and int(filename[filename.find(".")+1:filename.rfind(".")]) < 80: 
                     print int(filename[filename.find(".")+1:filename.rfind(".")]) 
-                    data, fs = analysis.loadau(rootdir + genre + "/" + filename)
+                    data, fs = analysis.load_au(rootdir + genre + "/" + filename)
                     bof = analysis.generateBagOfFrequencies(data, fs)
                     corpus.append(bof)
     return corpus
