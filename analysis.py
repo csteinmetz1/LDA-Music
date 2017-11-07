@@ -8,12 +8,14 @@ def loadau(filename):
     """
     Load .au audio file.
     
-    Args:
-        filename (str): path and filename of desire file from the current directory
+    Parameters
+    ----------
+    filename : path and filename of desire file from the current directory
 
-    Returns:
-       singal_data: Numpy array of the audio data in int16 format
-       sample_rate: Sample rate of the audio as an int 
+    Returns
+    -------
+    singal_data : Numpy array of the audio data in int16 format
+    sample_rate : Sample rate of the audio as an int 
     """
     signal_fp = sunau.open(filename, 'r')
     sample_rate = signal_fp.getframerate()
@@ -36,7 +38,14 @@ def loadau(filename):
     return signal_data, sample_rate
 
 def plotSignal(signal, sample_rate):
-
+    """
+    Plot frequency domain of given signal
+    
+    Parameters
+    ----------
+    signal : input frame in the time domain to plot
+    sample_rate : sampling rate of the input signal 
+    """
     Ts = 1.0/sample_rate # sample spacing
     n = len(signal) # number of sample points
     t = np.arange(0,n,1) 
@@ -72,8 +81,8 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
         
     Returns
     -------
-    out : ndarray
-        Data read from the text file.
+    frames : ndarray 
+        Array of windowed frames of signal.
 
     Notes
     -----
@@ -97,7 +106,20 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
 
 # generates bag of frequencies for one audio excerpt
 def generateBagOfFrequencies(signal, sample_rate, fft_size=2048, pow_fft=True):
+    """
+    Generates bag of frequencies of size fft_size/2 to be input into LDA model,
     
+    Parameters
+    ----------
+    signal : Numpy array of audio data
+    samele_rate : sample rate of audio data
+    fft_size : desired fft size
+    pow_fft : when True uses power spectrum instead of magnitude
+
+    Returns
+    -------
+    bof : List of tuples containing the frequency id and power at each frequency
+    """
     frames = frameSignal(signal, sample_rate)
 
     mag_frames = np.absolute(np.fft.rfft(frames, fft_size))
