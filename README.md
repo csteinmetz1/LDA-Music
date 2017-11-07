@@ -15,5 +15,7 @@ by G. Tzanetakis and P. Cook in IEEE Transactions on Audio and Speech Processing
 Written for Python 2.7.13
 * SciPy ([https://www.scipy.org/](https://www.scipy.org/))
 * NumPy ([http://www.numpy.org/](http://www.numpy.org/))
+* Pydub ([http://pydub.com/](http://pydub.com/))
+* FFmpeg ([https://www.ffmpeg.org/](https://www.ffmpeg.org/))
 * Matplotlib ([https://matplotlib.org/](https://matplotlib.org/))
 * Gensim ([https://radimrehurek.com/gensim/](https://radimrehurek.com/gensim/))
