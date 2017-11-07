@@ -11,7 +11,7 @@ This data set came out of work from the following publication.
 "Musical genre classification of audio signals" 
 by G. Tzanetakis and P. Cook in IEEE Transactions on Audio and Speech Processing 2002.
 
-# Dependencies 
+# Dependencies
 Written for Python 2.7.13
 * SciPy ([https://www.scipy.org/](https://www.scipy.org/))
 * NumPy ([http://www.numpy.org/](http://www.numpy.org/))

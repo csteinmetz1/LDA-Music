@@ -49,21 +49,32 @@ def load_mp3(filename):
     -------
     singal_data : Numpy array of the audio data in ??? format
     sample_rate : Sample rate of the audio as an int 
+
+    Notes
+    ------
+    Currently takes middle 30 seconds of audio 
     """
     
     # load audio file
     signal = AudioSegment.from_mp3(filename)
 
+    # grab ~ middle 30 seconds of audio
+    signal = signal[10000:40000]
+
+    # convert to numpy array -> floats
     signal_data = np.asarray(signal.get_array_of_samples())
+    signal_data = signal_data.astype(float)
+
+    # get sample rate
     sample_rate = signal.frame_rate
 
     # check number of channels - sum if 2 channels
     if signal.channels > 1:
-        print signal_data
-        left_channel = signal_data[0:2:]
-        right_channel = signal_data[1:2:]
+        left_channel  = signal_data[0::2] / 2
+        right_channel = signal_data[1::2] / 2
+
         mono_signal = np.add(left_channel, right_channel)
-        print mono_signal
+        signal_data = mono_signal
 
     return signal_data, sample_rate
 
