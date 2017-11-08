@@ -9,6 +9,13 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 import analysis # provides specilized methods for loading files and preprocessing
 
+class AudioCorpus():
+    def __iter__(self):
+        for song in library: # placeholder code
+            singal, fs = analysis.load_mp3(song)
+            bof = analysis.generateBagOfFrequencies(signal, fs)
+            yield bof 
+
 # generates "corpus" - list of bag of frequencies for audio excerpts
 # we will split the data set and use 80% to train the model
 def generateCorpus():
