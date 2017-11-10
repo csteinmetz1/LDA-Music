@@ -92,9 +92,6 @@ def generateCorpusDocuments():
     FFT anaylsis when attempting to stream the corpus.
 
     """
-    if not os.path.exists("corpus/"): # check for directory and create it if not present
-        os.makedirs("corpus/")
-
     fp = open("corpus/GTZAN_AudioCorpus.txt", "w") # open the file to store the vectors
     dataset = GTZAN_Dataset(0.8) # instantiate iterable dataset object
 
@@ -112,12 +109,17 @@ def trainModel(dictionary, corpus, num_topics):
     ldamodel = Lda(corpus, num_topics=num_topics, id2word=dictionary, passes=16, minimum_probability=0.0)
     return ldamodel
 
-# begin training
+### begin training ###
 if not os.path.exists("corpus/GTZAN_AudioCorpus.txt"):
+    os.makedirs("corpus/")
     generateCorpusDocuments()
 
 dictionary = generateDictionary(22050, 2048)
 corpus = GTZAN_AudioCorpus()
 ldamodel = trainModel(dictionary, corpus, 50)
+
+if not os.path.exists("model/"):
+    os.mkdir("corpus/")
+
 ldamodel.save("model/lda.model")
 
