@@ -2,11 +2,12 @@ import os
 import analysis
 
 class Dataset:
-    def __init__(self, datadir, corpusdir="corpus/", fraction=1.0):
+    def __init__(self, datadir, corpusdir="corpus/", filename="AudioCorpus.txt" ,fraction=1.0):
         self.datadir = datadir
         self.corpusdir = corpusdir
+        self.filename = filename
         self.fraction = fraction
-        self.audioCorpus = self.AudioCorpus(self.corpusdir)
+        self.audioCorpus = self.AudioCorpus(self.corpusdir, self.filename)
 
     def generateCorpusDocuments(self):
         """
@@ -29,7 +30,7 @@ class Dataset:
         fp.close()
 
     class AudioCorpus:
-        def __init__(self, corpusdir="/corpus", filename="AudioCorpus.txt" ,fraction=1.0):
+        def __init__(self, corpusdir, filename, fraction=1.0):
             self.corpusdir = corpusdir
             self.filename = filename
             self.fraction = fraction
