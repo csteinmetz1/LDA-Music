@@ -8,6 +8,7 @@ import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 import analysis # provides specilized methods for loading files and preprocessing
+import datasets # classes to easily access datasets
 
 # generates "corpus" - list of bag of frequencies for audio excerpts
 # we will split the data set and use 80% to train the model
@@ -37,26 +38,6 @@ def generateDictionary(sample_rate, fft_size):
         fid += 1 
     return dictionary
 
-def generateCorpusDocuments():
-    """
-    Iterates through the dataset and creates the bag of frequencies
-    for each audio file and then saves the vectors to a text file.
-    This prevents the need to perform the framing, windowing, and 
-    FFT anaylsis when attempting to stream the corpus.
-
-    """
-    fp = open("corpus/GTZAN_AudioCorpus.txt", "w") # open the file to store the vectors
-    dataset = GTZAN_Dataset(0.8) # instantiate iterable dataset object
-
-    for audioFile, fs in dataset:
-        bof = analysis.audio2bof(audioFile, fs)
-        for freq in bof:
-            fp.write(str(freq[1]) + " ")
-        fp.write("\n")
-
-    fp.close()
-
-
 def trainModel(dictionary, corpus, num_topics):
     Lda = gensim.models.ldamodel.LdaModel
     ldamodel = Lda(corpus, num_topics=num_topics, id2word=dictionary, passes=16, minimum_probability=0.0)
@@ -64,11 +45,10 @@ def trainModel(dictionary, corpus, num_topics):
 
 ### begin training ###
 if not os.path.exists("corpus/GTZAN_AudioCorpus.txt"):
-    os.makedirs("corpus/")
-    generateCorpusDocuments()
+    datasets.generateCorpusDocuments(datasets.GTZAN_Dataset(0.8))
 
 dictionary = generateDictionary(22050, 2048)
-corpus = GTZAN_AudioCorpus()
+corpus = datasets.GTZAN_AudioCorpus()
 ldamodel = trainModel(dictionary, corpus, 50)
 
 if not os.path.exists("model/"):
