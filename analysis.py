@@ -59,7 +59,12 @@ def load_mp3(filename):
     signal = AudioSegment.from_mp3(filename)
 
     # grab ~ middle 30 seconds of audio
-    signal = signal[10000:40000]
+    if len(signal) < 30000:
+        pass # let the signal pass through
+    elif len(signal)/2 > 30000:
+        signal = signal[len(signal)/2:len(signal)/2+30000]
+    else:
+        signal = signal[len(signal)-30000:len(signal)]
 
     # convert to numpy array -> floats
     signal_data = np.asarray(signal.get_array_of_samples())
@@ -91,17 +96,20 @@ def plotSignal(signal, sample_rate):
     n = len(signal) # number of sample points
     t = np.arange(0,n,1) 
 
-    Y = np.absolute(np.fft.rfft(signal, n))
+
+
+    Y = np.absolute(np.fft.rfft(signal, n-1))
+    print Y
     P = ((1.0 / n) * ((Y) ** 2)) # power spectrum
-    Y = Y[range(n/2)]
-    P = P[range(n/2)]
+    #Y = Y[range(n/2)]
+    #P = P[range(n/2)]
     Yt = np.arange(n/2)
     
     fig, ax = plt.subplots(2, 1)
     ax[0].plot(t,signal)
     ax[0].set_xlabel('Time')
     ax[0].set_ylabel('Amplitude')
-    ax[1].plot(Yt,abs(P),'r') 
+    ax[1].plot(Yt, Y,'r') 
     ax[1].set_xlabel('Freq (Hz)')
     ax[1].set_ylabel('|Y(freq)|')
     plt.xscale('log')
@@ -109,7 +117,7 @@ def plotSignal(signal, sample_rate):
 
     plt.show()
 
-def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
+def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024, pre_emphasis=True):
     """
     Frame and window a signal of arbitrary length.
 
@@ -127,15 +135,18 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
 
     Notes
     -----
-    This method uses a Hamming window
+    This method uses a Hamming window and applies a pre-emphasis filter
 
     """
-    signal_length = len(signal)
+    pre_emphasis = 0.97 # pre_emphasis filter coefficient
+    emphasized_signal = np.append(signal[0], signal[1:] - pre_emphasis * signal[:-1])
+
+    signal_length = len(emphasized_signal)
     num_frames = int(np.ceil(float(np.abs(signal_length - frame_length)) / frame_step)) 
 
     pad_signal_length = num_frames * frame_step + frame_length
     z = np.zeros(pad_signal_length - signal_length)
-    pad_signal = np.append(signal, z)
+    pad_signal = np.append(emphasized_signal, z)
 
     indices = np.tile(np.arange(0, frame_length), (num_frames, 1)) + np.tile(np.arange(0, num_frames * frame_step, frame_step), (frame_length, 1)).T
     frames = pad_signal[indices.astype(np.int32, copy=False)]
@@ -146,9 +157,9 @@ def frameSignal(signal, sample_rate, frame_length=2048, frame_step=1024):
     return frames
 
 # generates bag of frequencies for one audio excerpt
-def generateBagOfFrequencies(signal, sample_rate, fft_size=2048, pow_fft=True):
+def audio2bof(signal, sample_rate, fft_size=2048, pow_fft=True):
     """
-    Generates bag of frequencies of size fft_size/2 to be input into LDA model,
+    Generates bag of frequencies of size fft_size/2 to be input into LDA model.
     
     Parameters
     ----------

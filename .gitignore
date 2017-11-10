@@ -1,7 +1,7 @@
 genres/
 ref/
-speech.wav
 model/
+corpus/
 *.pyc
 *.au
 *.mp3
