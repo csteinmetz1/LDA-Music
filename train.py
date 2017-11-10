@@ -45,7 +45,8 @@ def trainModel(dictionary, corpus, num_topics):
 
 ### begin training ###
 if not os.path.exists("corpus/GTZAN_AudioCorpus.txt"):
-    datasets.generateCorpusDocuments(datasets.GTZAN_Dataset(0.8))
+    dataset = datasets.GTZAN_Dataset("genres/")
+    dataset.generateCorpusDocuments()
 
 dictionary = generateDictionary(22050, 2048)
 corpus = datasets.GTZAN_AudioCorpus()
