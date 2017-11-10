@@ -46,7 +46,7 @@ class GTZAN_AudioCorpus:
             for freq in audioFileVec.split():
                 bof.append((fid, int(freq)))
                 fid += 1
-        yield bof
+            yield bof
 
 
 class FMA_AudioCorpus:
