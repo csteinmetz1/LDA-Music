@@ -2,12 +2,12 @@ import os
 import analysis
 
 class Dataset:
-    def __init__(self, datadir, corpusdir="corpus/", filename="AudioCorpus.txt" ,fraction=1.0):
+    def __init__(self, datadir, corpusdir="corpus/", filename="AudioCorpus.txt"):
         self.datadir = datadir
         self.corpusdir = corpusdir
         self.filename = filename
-        self.fraction = fraction
-        self.audioCorpus = self.AudioCorpus(self.corpusdir, self.filename)
+        self.size = 0
+        self.generateCorpusDocuments()
 
     def generateCorpusDocuments(self):
         """
@@ -21,27 +21,43 @@ class Dataset:
             print "Directory does not exsist. Creating " + self.corpusdir
             os.mkdir(self.corpusdir)
 
-        fp = open(self.corpusdir + self.audioCorpus.filename, "w") # open the file to store the vectors
+        self.size = 1
+
+        fp = open(self.corpusdir + self.filename, "w") # open the file to store the vectors
         for audioFile, fs in self:
             bof = analysis.audio2bof(audioFile, fs)
             for freq in bof:
                 fp.write(str(freq[1]) + " ")
             fp.write("\n")
+            self.size += 1
         fp.close()
 
-    class AudioCorpus:
-        def __init__(self, corpusdir, filename, fraction=1.0):
-            self.corpusdir = corpusdir
-            self.filename = filename
-            self.fraction = fraction
-        def __iter__(self):
-            for audioFileVec in open(self.corpusdir + "/" + self.filename):
-                bof = []
-                fid = 0
-                for freq in audioFileVec.split():
-                    bof.append((fid, int(freq)))
-                    fid += 1
-                yield bof
+    def OpenAudioCorpus(self):
+        self.AudioCorpus = AudioCorpus(corpusdir=self.corpusdir, filename=self.filename, size=self.size, fraction=self.fraction)
+        return self.AudioCorpus
+
+
+class AudioCorpus:
+    """ This class implements a corpus object from the dataset.
+
+    In order to limit the memory footprint of the training process
+    this class enables the bag of frequency vectors to be streamed 
+    into the LDA model serially.
+
+    """
+    def __init__(self, corpusdir, filename, size, fraction):
+        self.corpusdir = corpusdir
+        self.filename = filename
+        self.fraction = fraction
+        self.size = size
+    def __iter__(self):
+        for audioFileVec in open(self.corpusdir + "/" + self.filename):
+            bof = []
+            fid = 0
+            for freq in audioFileVec.split():
+                bof.append((fid, int(freq)))
+                fid += 1
+            yield bof
 
 class GTZAN_Dataset(Dataset):
     """ This class implements a dataset object from the GTZAN dataset.
@@ -54,29 +70,10 @@ class GTZAN_Dataset(Dataset):
         for genre in os.listdir(self.datadir):
             if not genre.endswith(".DS_Store"): # ignore these annoying MacOS X files
                 for filename in os.listdir(self.datadir + genre):
-                    if filename.endswith(".au") and int(filename[filename.find(".")+1:filename.rfind(".")]) < (self.fraction * 100): 
+                    if filename.endswith(".au"): # and int(filename[filename.find(".")+1:filename.rfind(".")]) < (self.fraction * 100): 
                         print int(filename[filename.find(".")+1:filename.rfind(".")]) 
                         data, fs = analysis.load_au(self.datadir + genre + "/" + filename)
                         yield data, fs
-
-class GTZAN_AudioCorpus:
-    """ This class implements a corpus object from the GTZAN dataset.
-
-    In order to limit the memory footprint of the training process
-    this class enables the bag of frequency vectors to be streamed 
-    into the LDA model serially.
-
-    """
-    def __init__(self):
-        self.corpusdir = "corpus/GTZAN_AudioCorpus.txt"
-    def __iter__(self):
-        for audioFileVec in open(self.corpusDirectory):
-            bof = []
-            fid = 0
-            for freq in audioFileVec.split():
-                bof.append((fid, int(freq)))
-                fid += 1
-            yield bof
 
 class FMA_SmallDataset:
     def __init__(self, fraction=1):
@@ -90,13 +87,3 @@ class FMA_SmallDataset:
                     if filename.endswith(".mp3") and (self.filesLoaded / self.totalFiles) <= (self.fraction * 100.0): 
                         data, fs = analysis.load_mp3(self.rootdir + subdir + "/" + filename)
                         yield data, fs           
-
-class FMA_AudioCorpus:
-    def __init__(self):
-        self.filesLoaded = 0.0
-        self.totalFiles = 8000.0
-    def __iter__(self):
-        for song in library: # placeholder code
-            singal, fs = analysis.load_mp3(song)
-            bof = analysis.audio2bof(signal, fs)
-            yield bof

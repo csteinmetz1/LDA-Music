@@ -44,13 +44,12 @@ def trainModel(dictionary, corpus, num_topics):
     return ldamodel
 
 ### begin training ###
-if not os.path.exists("corpus/GTZAN_AudioCorpus.txt"):
-    dataset = datasets.GTZAN_Dataset("genres/", filename="GTZAN_AudioCorpus.txt")
-    dataset.generateCorpusDocuments()
+
+dataset = datasets.GTZAN_Dataset("genres/", filename="GTZAN_AudioCorpus.txt")
+
 
 dictionary = generateDictionary(22050, 2048)
-corpus = datasets.GTZAN_AudioCorpus()
-ldamodel = trainModel(dictionary, corpus, 50)
+ldamodel = trainModel(dictionary, dataset.OpenAudioCorpus(), 50)
 
 if not os.path.exists("model/"):
     os.mkdir("corpus/")
